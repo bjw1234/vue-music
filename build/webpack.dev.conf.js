@@ -10,6 +10,13 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 const portfinder = require('portfinder')
 
+// mock假数据
+const express = require('express')
+const app = express()
+const recommend = require('../dev-server/desclist.json')
+var apiRouter  = express.Router()
+app.use('/api',apiRouter)
+
 const HOST = process.env.HOST
 const PORT = process.env.PORT && Number(process.env.PORT)
 
@@ -22,6 +29,14 @@ const devWebpackConfig = merge(baseWebpackConfig, {
 
   // these devServer options should be customized in /config/test-index.js
   devServer: {
+    before(app) {
+      app.get('/api/desclist',(req,res) => {
+        res.json({
+          errno: 0,
+          data: recommend
+        })
+      })
+    },
     clientLogLevel: 'warning',
     historyApiFallback: {
       rewrites: [

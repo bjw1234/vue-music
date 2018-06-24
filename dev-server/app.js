@@ -12,7 +12,6 @@ fs.readFile('./desclist.json', 'utf8', (err, data) => {
 });
 
 app.get('/desclist', (req, res) => {
-  console.log(req.name);
   if (result) {
     res.json(result);
     res.end();

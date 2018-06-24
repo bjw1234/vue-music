@@ -64,7 +64,7 @@
       },
       _getDescList () {
         getDescList().then(res => {
-          let data = JSON.parse(res.data);
+          let data = res.data.data;
           if (data.code === ERR_OK) {
             this.descList = data.data.list;
           }

@@ -39,9 +39,9 @@
       }
     },
     mounted () {
-      setTimeout(() => {
+      this.$nextTick(() => {
         this._initScroll();
-      }, 20);
+      });
     },
     methods: {
       _initScroll () {
@@ -54,9 +54,8 @@
         });
 
         if (this.listenScroll) {
-          let me = this;
           this.scroll.on('scroll', (pos) => {
-            me.$emit('scroll', pos);
+            this.$emit('scroll', pos);
           });
         }
 
