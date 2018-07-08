@@ -1,5 +1,5 @@
 <template>
-  <scroll :data="data" class="listview">
+  <scroll :data="data" class="listview" ref="listView">
     <ul>
       <li class="list-group" v-for="group in data" :key="group.title">
         <h2 class="list-group-title">{{ group.title }}</h2>
@@ -33,6 +33,9 @@
       Scroll, Loading
     },
     methods: {
+      refresh () {
+        this.$refs.listView.refresh();
+      },
       selectItem (item) {
         this.$emit('select', item);
       }

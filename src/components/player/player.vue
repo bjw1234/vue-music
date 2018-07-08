@@ -15,17 +15,35 @@
           <h1 class="title">{{ currentSong.name }}</h1>
           <h2 class="subtitle">{{ currentSong.singer }}</h2>
         </div>
-        <div class="middle">
-          <div class="middle-l">
+        <div class="middle"
+             @touchstart.prevent="middleTouchStart"
+             @touchmove.prevent="middleTouchMove"
+             @touchend="middleTouchEnd">
+          <div class="middle-l" ref="middleLeft">
             <div class="cd-wrapper" ref="cdWrapper">
               <div class="cd" :class="cdRotate">
                 <img :src="currentSong.image" alt="" class="image">
               </div>
             </div>
+            <div class="lyric-wrapper">
+              {{currentPlayingLyric}}
+            </div>
           </div>
+          <scroll ref="lyricScroll" class="middle-r" :data="currentLyrics && currentLyrics.lines">
+            <div class="lyric-wrapper">
+              <div v-if="currentLyrics">
+                <p ref="lyricLine" class="txt" :class="{'current':currentLineNum === index}"
+                   v-for="(line,index) in currentLyrics.lines" :key="index">
+                  {{ line.txt }}</p>
+              </div>
+            </div>
+          </scroll>
         </div>
         <div class="bottom">
-          <div class="dot-wrapper"></div>
+          <div class="dot-wrapper">
+            <span class="dot" :class="{'active':currentMiddleShow === 'cd'}"></span>
+            <span class="dot" :class="{'active':currentMiddleShow === 'lyric'}"></span>
+          </div>
           <div class="progress-wrapper">
             <span class="time time-l">{{ format(currentSongTime) }}</span>
             <div class="progress-bar-wrapper">
@@ -77,33 +95,38 @@
            @error="songError"
            @ended="songEnd"
            @timeupdate="updateTime">
-      <p>sorry,your browser not support audio element</p>
     </audio>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
-  import { ERR_OK } from 'api/config';
   import Velocity from 'velocity-animate';
   import { disorder } from 'common/js/util';
   import { playMode } from 'common/js/config';
-  import { getSongVkey, getSongURL } from 'api/singer';
   import { mapGetters, mapMutations } from 'vuex';
+  import Scroll from 'base/scroll/scroll';
   import progressBar from 'base/progress-bar/progress-bar';
   import progressCircle from 'base/progress-circle/progress-circle';
-  //  import { prefixStyle } from 'common/js/dom';
-  //  const TRANSFORM = prefixStyle('transform');
+  import LyricParser from 'lyric-parser';
+  import { prefixStyle } from 'common/js/dom';
+
+  const TRANSFORM = prefixStyle('transform');
+  const TRANSITION = prefixStyle('transition');
 
   export default {
     components: {
-      progressBar, progressCircle
+      progressBar, progressCircle, Scroll
     },
     data () {
       return {
         circleRadius: 32,
         currentSongUrl: '',
+        currentLineNum: 0,
+        currentLyrics: null,
         currentSongReady: false,
-        currentSongTime: 0
+        currentSongTime: 0,
+        currentPlayingLyric: '',
+        currentMiddleShow: 'cd'
       };
     },
     computed: {
@@ -136,22 +159,14 @@
       ])
     },
     watch: {
-      currentSong (newSong, oldSong) { // 歌曲变化请求不同的url
+      currentSong (newSong, oldSong) {
         if (newSong.id === oldSong.id) {
           return;
         }
-        let mid = this.currentSong.mid;
-        if (mid) {
-          getSongVkey(mid).then((res) => {
-            if (res.code === ERR_OK) {
-              if (res.data.items.length > 0) {
-                let vkey = res.data.items[0].vkey;
-                this.currentSongUrl = getSongURL(mid, vkey);
-                console.log(this.currentSongUrl);
-              }
-            }
-          });
-        }
+        this.currentSong.getSongUrl().then(url => {
+          this.currentSongUrl = url;
+        });
+        this.getSongLyric();
       },
       currentSongUrl () {
         this.$nextTick(() => {
@@ -159,11 +174,20 @@
         });
       },
       playing (newState) {
-        let audio = this.$refs.audio;
-        this.$nextTick(() => {
-          newState ? audio.play() : audio.pause();
-        });
+        setTimeout(() => {
+          let audio = this.$refs.audio;
+          if (newState) {
+            audio.play();
+          } else {
+            audio.pause();
+          }
+        }, 500);
       }
+    },
+    created () {
+      this.touch = {};
+      // 屏幕宽度
+      this.touch.screenW = parseInt(document.documentElement.clientWidth);
     },
     methods: {
       back () {
@@ -240,6 +264,10 @@
       },
       togglePlaying () {
         this.setPlayingState(!this.playing);
+        // toggle歌词
+        if (this.currentLyrics) {
+          this.currentLyrics.togglePlay();
+        }
       },
       prevSong () {
         this.currentSongTime = 0;
@@ -282,6 +310,10 @@
           let audio = this.$refs.audio;
           audio.currentTime = 0;
           audio.play();
+          // 歌词回到起始位置
+          if (this.currentLyrics) {
+            this.currentLyrics.seek(0);
+          }
           return;
         }
         this.nextSong();
@@ -308,7 +340,13 @@
         let audio = this.$refs.audio;
         let songlen = this.currentSong.duration;
         audio.currentTime = percent * songlen;
+        // 设置歌词的位置
+        if (this.currentLyrics) {
+          this.currentLyrics.seek(percent * songlen * 1000);
+        }
         if (!this.playing) {
+          // fix lyrics bug
+          this.currentLyrics.togglePlay();
           this.togglePlaying();
         }
       },
@@ -332,6 +370,93 @@
           }
         });
         this.setCurrentIndex(index);
+      },
+      getSongLyric () {
+        // 如果当前已经有了歌词对象
+        if (this.currentLyrics) {
+          this.currentLyrics.stop();
+        }
+        this.currentSong.getLyrics().then(lyrics => {
+          // 初始化歌词对象和回调
+          this.currentLyrics = new LyricParser(lyrics, ({lineNum, txt}) => {
+            this.currentLineNum = lineNum;
+            this.currentPlayingLyric = txt;
+            if (lineNum > 5) {
+              let elements = this.$refs.lyricLine;
+              this.$refs.lyricScroll.scrollToElement(elements[lineNum - 5], 1000);
+            } else {
+              this.$refs.lyricScroll.scrollTo(0, 0, 1000);
+            }
+          });
+          this.currentLyrics.play();
+        });
+      },
+      middleTouchStart (e) {
+        this.touch.initaled = true;
+        let touch = e.touches[0];
+        this.touch.startX = touch.pageX;
+        this.touch.startY = touch.pageY;
+        this.touch.cd = this.$refs.middleLeft;
+        this.touch.lyric = this.$refs.lyricScroll.$el;
+        this.touch.cd.style[TRANSITION] = '';
+        this.touch.lyric.style[TRANSITION] = '';
+      },
+      middleTouchMove (e) {
+        if (!this.touch.initaled) {
+          return;
+        }
+        let touch = e.touches[0];
+        let deltaX = touch.pageX - this.touch.startX;
+        let deltaY = touch.pageY - this.touch.startY;
+        if (Math.abs(deltaY) > Math.abs(deltaX)) {
+          return;
+        }
+
+        // cd 左划
+        if (this.currentMiddleShow === 'cd' && deltaX < 0) {
+          this.touch.deltaX = deltaX;
+          this.touch.cd.style[TRANSFORM] = `translate3d(${deltaX}px,0,0)`;
+          this.touch.lyric.style[TRANSFORM] = `translate3d(${deltaX}px,0,0)`;
+        }
+        // lyric 右划
+        if (this.currentMiddleShow === 'lyric' && deltaX > 0) {
+          this.touch.deltaX = deltaX;
+          this.touch.lyric.style[TRANSFORM] = `translate3d(${deltaX - this.touch.screenW}px,0,0)`;
+          this.touch.cd.style[TRANSFORM] = `translate3d(${deltaX - this.touch.screenW}px,0,0)`;
+        }
+      },
+      middleTouchEnd (e) {
+        let deltaX = this.touch.deltaX;
+        let screenW = parseInt(this.touch.screenW);
+        // 在cd页面 向左滑动
+        if (this.currentMiddleShow === 'cd' && deltaX < 0) {
+          // 超过临界值
+          this.touch.cd.style[TRANSITION] = 'all 0.5s';
+          this.touch.lyric.style[TRANSITION] = 'all 0.5s';
+          if (Math.abs(deltaX) > screenW / 4) {
+            this.touch.cd.style[TRANSFORM] = `translate3d(${0 - screenW}px,0,0)`;
+            this.touch.lyric.style[TRANSFORM] = `translate3d(${0 - screenW}px,0,0)`;
+            this.currentMiddleShow = 'lyric';
+          } else {
+            this.touch.cd.style[TRANSFORM] = `translate3d(0,0,0)`;
+            this.touch.lyric.style[TRANSFORM] = `translate3d(0,0,0)`;
+          }
+        }
+
+        // 在lyric页面 向右滑动
+        if (this.currentMiddleShow === 'lyric' && deltaX > 0) {
+          // 超过临界值
+          this.touch.cd.style[TRANSITION] = 'all 0.5s';
+          this.touch.lyric.style[TRANSITION] = 'all 0.5s';
+          if (Math.abs(deltaX) > screenW / 4) {
+            this.touch.cd.style[TRANSFORM] = `translate3d(0,0,0)`;
+            this.touch.lyric.style[TRANSFORM] = `translate3d(0,0,0)`;
+            this.currentMiddleShow = 'cd';
+          } else {
+            this.touch.cd.style[TRANSFORM] = `translate3d(${0 - screenW}px,0,0)`;
+            this.touch.lyric.style[TRANSFORM] = `translate3d(${0 - screenW}px,0,0)`;
+          }
+        }
       },
       ...mapMutations({
         setFullScreen: 'SET_FULLSCREEN_STATE',
@@ -441,10 +566,49 @@
                 border-radius: 50%
                 box-sizing: border-box
                 border: 10px solid rgba(255, 255, 255, 0.1)
+          .lyric-wrapper
+            width: 80%
+            margin: 30px auto 0 auto
+            overflow: hidden
+            text-align: center
+            font-size: $font-size-medium
+        .middle-r
+          display: inline-block
+          vertical-align: top
+          width: 100%
+          height: 100%
+          overflow: hidden
+          .lyric-wrapper
+            width: 80%
+            margin: 0 auto
+            overflow: hidden
+            text-align: center
+            .txt
+              line-height: 32px
+              color: $color-text-l
+              font-size: $font-size-medium
+              &.current
+                color: $color-text
       .bottom
         position: absolute
-        bottom: 50px
+        bottom: 35px
         width: 100%
+        .dot-wrapper
+          width: 100%
+          text-align: center
+          vertical-align: top
+          font-size: 0
+          .dot
+            display: inline-block
+            width: 8px
+            height: 8px
+            margin: 0 4px
+            border-radius: 50%
+            background: $color-text-l
+            &.active
+              width: 15px
+              border-radius: 5px
+              background: $color-text-ll
         .progress-wrapper
           display: flex
           align-items: center

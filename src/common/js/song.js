@@ -1,3 +1,6 @@
+import { getSongVkey, getSongURL, getLyrics } from 'api/song';
+import { ERR_OK } from 'api/config';
+
 export class Song {
   constructor ({id, mid, singer, name, album, duration, image, url}) {
     this.id = id;
@@ -7,8 +10,44 @@ export class Song {
     this.album = album;
     this.duration = duration;
     this.image = image;
-    this.url = url;
   }
+
+  // 获取歌曲url的方法
+  getSongUrl () {
+    if (this.url) {
+      return Promise.resolve(this.url);
+    }
+    return getSongVkey(this.mid).then((res) => {
+      if (res.code === ERR_OK) {
+        if (res.data.items.length > 0) {
+          let vkey = res.data.items[0].vkey;
+          let currentSongUrl = getSongURL(this.mid, vkey);
+          this.url = currentSongUrl;
+          return Promise.resolve(currentSongUrl);
+        }
+      }
+    });
+  }
+
+  // 获取歌曲的歌词
+  getLyrics () {
+    if (this.lyrics) {
+      return Promise.resolve(this.lyrics);
+    }
+    return getLyrics(this.id).then(res => {
+      if (res && res.data.code === ERR_OK) {
+        let lyrics = _decodeLyrics(res.data.lyric);
+        this.lyrics = lyrics;
+        return Promise.resolve(lyrics);
+      }
+    });
+  }
+}
+
+function _decodeLyrics (lyrics) {
+  let div = document.createElement('div');
+  div.innerHTML = lyrics;
+  return div.innerHTML;
 }
 
 // 工厂方法，创建歌曲对象
@@ -24,6 +63,7 @@ export function createSong (musicData) {
   });
 }
 
+// 如果有多个歌手名，则用/隔开
 function _filterSinger (singer) {
   let ret = [];
   singer.forEach(s => ret.push(s.name));

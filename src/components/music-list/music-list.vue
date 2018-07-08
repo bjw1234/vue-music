@@ -7,7 +7,7 @@
     <div class="bg-image" :style="bgStyle" ref="image">
       <div class="filter" ref="filter"></div>
       <div class="play-wrapper">
-        <div class="play" ref="play" v-if="songs.length>0">
+        <div class="play" ref="play" v-if="songs.length>0" @click="clickRandomPlayAll">
           <span class="icon-play"></span>
           <span class="text">随机播放全部</span>
         </div>
@@ -33,6 +33,7 @@
   import Loading from 'base/loading/loading';
   import { prefixStyle } from 'common/js/dom';
   import { mapActions } from 'vuex';
+  import { playListMixin } from 'common/js/mixin';
   // CSS属性
   const transform = prefixStyle('transform');
   const backdrop = prefixStyle('backdrop-filter');
@@ -40,6 +41,7 @@
   const TOP_HEIGHT = 40;
 
   export default {
+    mixins: [playListMixin],
     components: {
       Scroll, SongList, Loading
     },
@@ -118,8 +120,20 @@
           index
         });
       },
+      clickRandomPlayAll () {
+        this.randomPlayAll({
+          list: this.songs
+        });
+      },
+      // 解决播放器遮挡列表的问题
+      handlePlayList (list) {
+        let bottom = list.length > 0 ? '60px' : 0;
+        this.$refs.scroll.$el.style.bottom = bottom;
+        this.$refs.scroll.refresh();
+      },
       ...mapActions([
-        'selectPlay'
+        'selectPlay',
+        'randomPlayAll'
       ])
     }
   };

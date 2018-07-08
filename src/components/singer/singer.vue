@@ -1,6 +1,6 @@
 <template>
-  <div class="singer">
-    <list-view :data="singerArr" @select="selectSinger"></list-view>
+  <div class="singer" ref="singer">
+    <list-view :data="singerArr" @select="selectSinger" ref="listView"></list-view>
     <router-view></router-view>
   </div>
 </template>
@@ -12,11 +12,13 @@
   import SingerClz from 'common/js/singer';
   import ListView from 'base/listview/listview';
   import { mapMutations } from 'vuex';
+  import { playListMixin } from 'common/js/mixin';
 
   const HOT_NAME = '热门';
   const HOT_SINGER_LEN = 10;
 
   export default {
+    mixins: [playListMixin],
     components: {
       ListView
     },
@@ -29,11 +31,17 @@
       };
     },
     methods: {
+      // 解决播放器遮挡列表的问题
+      handlePlayList (list) {
+        let bottom = list.length > 0 ? '60px' : 0;
+        this.$refs.singer.style.bottom = bottom;
+        this.$refs.listView.refresh();
+      },
       _getSinger () {
         getSinger().then(res => {
           if (res.code === ERR_OK) {
-              let singerList = res.singerList.data.singerlist;
-              this.singerArr = this._normalizeSinger(singerList);
+            let singerList = res.singerList.data.singerlist;
+            this.singerArr = this._normalizeSinger(singerList);
           }
         });
       },

@@ -39,8 +39,10 @@
   import Slider from 'base/slider/slider';
   import Scroll from 'base/scroll/scroll';
   import Loading from 'base/loading/loading';
+  import { playListMixin } from 'common/js/mixin';
 
   export default {
+    mixins: [playListMixin],
     created () {
       this._getRecommend();
       this._getDescList();
@@ -55,6 +57,12 @@
       };
     },
     methods: {
+      // 解决播放器遮挡列表的问题
+      handlePlayList (list) {
+        let bottom = list.length > 0 ? '60px' : 0;
+        this.$refs.recommend.style.bottom = bottom;
+        this.$refs.scroll.refresh();
+      },
       _getRecommend () {
         getRecommend().then(res => {
           if (res.code === ERR_OK) {
@@ -64,9 +72,9 @@
       },
       _getDescList () {
         getDescList().then(res => {
-          let data = res.data.data;
-          if (data.code === ERR_OK) {
-            this.descList = data.data.list;
+          if (res.data.code === ERR_OK) {
+            let data = res.data.data;
+            this.descList = data.list;
           }
         });
       },
