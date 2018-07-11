@@ -6,6 +6,8 @@ import Rank from '@/components/rank/rank';
 import Search from '@/components/search/search';
 // 子路由
 import SingerDetail from '@/components/singer-detail/singer-detail';
+import RecommendDesc from '@/components/recommend-desc/recommend-desc';
+import RankDetail from '@/components/rank-detail/rank-detail';
 
 Vue.use(Router);
 
@@ -16,7 +18,13 @@ export default new Router({
       redirect: '/recommend'
     }, {
       path: '/recommend',
-      component: Recommend
+      component: Recommend,
+      children: [
+        {
+          path: ':id',
+          component: RecommendDesc
+        }
+      ]
     }, {
       path: '/singer',
       component: Singer,
@@ -28,10 +36,22 @@ export default new Router({
       ]
     }, {
       path: '/rank',
-      component: Rank
+      component: Rank,
+      children: [
+        {
+          path: ':id',
+          component: RankDetail
+        }
+      ]
     }, {
       path: '/search',
-      component: Search
+      component: Search,
+      children: [
+        {
+          path: ':id',
+          component: SingerDetail
+        }
+      ]
     }
   ]
 });

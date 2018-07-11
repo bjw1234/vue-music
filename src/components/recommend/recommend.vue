@@ -14,7 +14,7 @@
         <div class="recommend-list">
           <h1 class="list-title">热门歌单推荐</h1>
           <ul>
-            <li class="item" v-for="item in descList" :key="item.id">
+            <li @click="selectItem(item)" class="item" v-for="item in descList" :key="item.id">
               <div class="icon">
                 <img width="60px" height="60px" v-lazy="item.imgurl" alt="">
               </div>
@@ -30,6 +30,7 @@
         <loading></loading>
       </div>
     </scroll>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -40,6 +41,7 @@
   import Scroll from 'base/scroll/scroll';
   import Loading from 'base/loading/loading';
   import { playListMixin } from 'common/js/mixin';
+  import { mapMutations } from 'vuex';
 
   export default {
     mixins: [playListMixin],
@@ -83,12 +85,22 @@
           this.$refs.scroll.refresh();
           this._loadImageFlag = true;
         }
-      }
+      },
+      selectItem (item) {
+        this.$router.push({
+          path: `recommend/${item.dissid}`
+        });
+        // 通过vuex将item传递出去
+        this.setRecommendDesc(item);
+      },
+      ...mapMutations({
+        setRecommendDesc: 'SET_RECOMMEND_DESC'
+      })
     }
   };
 </script>
 
-<style lang="stylus" rel="stylesheet/stylus">
+<style lang="stylus" rel="stylesheet/stylus" scoped>
   @import "~common/stylus/variable"
   @import "~common/stylus/mixin"
 

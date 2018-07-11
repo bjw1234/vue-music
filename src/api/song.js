@@ -17,7 +17,8 @@ export function getSongVkey (songmid) {
     guid: 3009522126
   });
   return jsonp(url, data, {
-    param: 'callback'
+    param: 'callback',
+    timeout: 5000
   });
 }
 

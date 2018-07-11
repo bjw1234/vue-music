@@ -18,9 +18,9 @@
             :listen-scroll="true" :data="songs"
             class="scroll" ref="scroll">
       <div class="song-list-wrapper">
-        <song-list @select_song="selectSongItem" :songs="songs"></song-list>
+        <song-list @select_song="selectSongItem" :songs="songs" :rank="rank"></song-list>
       </div>
-      <div class="loading-container">
+      <div class="loading-container" v-if="!songs.length">
         <loading></loading>
       </div>
     </scroll>
@@ -53,6 +53,10 @@
       bgImage: {
         type: String,
         default: ''
+      },
+      rank: {
+        type: Boolean,
+        default: false
       },
       songs: {
         type: Array,

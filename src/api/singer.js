@@ -18,7 +18,8 @@ export function getSinger () {
     })
   });
   return jsonp(url, data, {
-    param: 'callback'
+    param: 'callback',
+    timeout: 5000
   });
 }
 

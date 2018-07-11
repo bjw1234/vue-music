@@ -22,6 +22,15 @@ const mutations = {
   },
   [types.SET_CURRENTINDEX] (state, index) {
     state.currentIndex = index;
+  },
+  [types.SET_RECOMMEND_DESC] (state, desc) {
+    state.recommendDesc = desc;
+  },
+  [types.SET_TOPLIST_DETAIL] (state, detail) {
+    state.topListDetail = detail;
+  },
+  [types.SET_SEARCH_HISTORY] (state, history) {
+    state.searchHistory = history;
   }
 };
 

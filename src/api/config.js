@@ -7,7 +7,8 @@ export const commonParams = {
 };
 
 export const options = {
-  param: 'jsonpCallback'
+  param: 'jsonpCallback',
+  timeout: 5000
 };
 
 export const ERR_OK = 0;

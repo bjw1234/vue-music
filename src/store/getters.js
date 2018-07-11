@@ -9,3 +9,6 @@ export const currentIndex = state => state.currentIndex;
 export const currentSong = state => {
   return state.playList[state.currentIndex] || {};
 };
+export const recommendDesc = state => state.recommendDesc;
+export const topListDetail = state => state.topListDetail;
+export const searchHistory = state => state.searchHistory;

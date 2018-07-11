@@ -37,7 +37,7 @@
     methods: {
       _getSingerDetail () {
         if (!this.singer.id) {
-          this.$router.push('/singer');
+          this.$router.back();
           return;
         }
         getSingerDetail(this.singer.id).then(res => {

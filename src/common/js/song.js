@@ -21,11 +21,14 @@ export class Song {
       if (res.code === ERR_OK) {
         if (res.data.items.length > 0) {
           let vkey = res.data.items[0].vkey;
+          if (!vkey) { return Promise.reject(new Error('getSongKey function got vkey is null')); }
           let currentSongUrl = getSongURL(this.mid, vkey);
           this.url = currentSongUrl;
           return Promise.resolve(currentSongUrl);
         }
       }
+    }).catch((err) => {
+      return Promise.reject(err);
     });
   }
 
@@ -55,7 +58,7 @@ export function createSong (musicData) {
   return new Song({
     id: musicData.songid,
     mid: musicData.songmid,
-    singer: _filterSinger(musicData.singer),
+    singer: filterSinger(musicData.singer),
     name: musicData.songname,
     album: musicData.albumname,
     duration: musicData.interval,
@@ -64,7 +67,7 @@ export function createSong (musicData) {
 }
 
 // 如果有多个歌手名，则用/隔开
-function _filterSinger (singer) {
+export function filterSinger (singer) {
   let ret = [];
   singer.forEach(s => ret.push(s.name));
   return ret.join('/');

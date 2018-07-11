@@ -42,6 +42,8 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           params: req.query
         }).then(response => {
           res.json(response.data);
+        }).catch(err => {
+          res.end(err);
         });
       });
       // 歌词
@@ -55,10 +57,27 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           params: req.query
         }).then(response => {
           let reg = /^\w+\(({.+})\)$/;
-          if(typeof response.data === 'string'){
+          if (typeof response.data === 'string') {
             let matches = response.data.match(reg);
             res.json(JSON.parse(matches[1]));
           }
+        }).catch(err => {
+          res.end(err);
+        });
+      });
+      // 推荐页歌单
+      app.get('/api/desc_song', (req, res) => {
+        let url = 'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg';
+        axios.get(url, {
+          headers: {
+            Referer: `https://y.qq.com/n/yqq/playlist/${req.query.dissid}.html`
+          },
+          params: req.query
+        }).then(response => {
+          console.log(response.data);
+          res.json(response.data);
+        }).catch(err => {
+          res.end(err);
         });
       });
     },
