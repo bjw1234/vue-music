@@ -1,9 +1,8 @@
 // 对mutation进行封装，或者执行一些异步操作
-
 import * as types from './mutation-types';
 import { disorder } from '../common/js/util';
 import { playMode } from '../common/js/config';
-import { saveSearch, deleteSearch, clearSearch } from '../common/js/cache';
+import { saveSearch, deleteSearch, clearSearch, savePlay, saveLike, deleteLike } from '../common/js/cache';
 
 function _findIndex (list, song) {
   return list.findIndex(item => {
@@ -113,11 +112,8 @@ export const deleteSong = ({commit, state}, song) => {
   commit(types.SET_CURRENTINDEX, currentIndex);
   commit(types.SET_PLAYLIST, playList);
   commit(types.SET_SEQUENCELIST, sequenceList);
-  if (!playList.length) {
-    commit(types.SET_PLAYING_STATE, false);
-  } else {
-    commit(types.SET_PLAYING_STATE, true);
-  }
+  const flag = playList.length > 0;
+  commit(types.SET_PLAYING_STATE, flag);
 };
 
 export const deleteSongAll = ({commit}) => {
@@ -140,4 +136,19 @@ export const deleteHistory = ({commit}, data) => {
 // 清空所有历史数据
 export const clearHistory = ({commit}) => {
   commit(types.SET_SEARCH_HISTORY, clearSearch());
+};
+
+// 保存播放历史
+export const savePlayHistory = ({commit}, song) => {
+  commit(types.SET_PLAY_HISTORY, savePlay(song));
+};
+
+// 保存喜爱的歌曲
+export const saveLikeSong = ({commit}, song) => {
+  commit(types.SET_LIKE_SONGLIST, saveLike(song));
+};
+
+// 删除喜爱的歌曲
+export const deleteLikeSong = ({commit}, song) => {
+  commit(types.SET_LIKE_SONGLIST, deleteLike(song));
 };

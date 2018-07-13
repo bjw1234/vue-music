@@ -12,3 +12,7 @@ export const currentSong = state => {
 export const recommendDesc = state => state.recommendDesc;
 export const topListDetail = state => state.topListDetail;
 export const searchHistory = state => state.searchHistory;
+export const playHistory = state => state.playHistory;
+export const likeSongList = state => state.likeSongList;
+
+export const screenState = state => state.screenState;

@@ -12,11 +12,14 @@
         <scroll :data="sequenceList" ref="listScroll" class="list-content">
           <transition-group name="out" tag="ul">
             <li ref="itemHook" class="item"
+                :data-id="item.id"
                 v-for="(item,index) in sequenceList"
                 :key="item.id" @click="itemClick(item,index)">
               <i class="current" :class="getCurrentIcon(item)"></i>
               <span class="text" v-html="item.name" :class="getCurrentTxt(item)"></span>
-              <span class="like"><i class="icon-not-favorite"></i></span>
+              <span class="like" @click.stop="toggleLike(item)">
+                <i :class="iconFavorite(item)"></i>
+              </span>
               <span class="delete" @click.stop="deleteOne(item)">
               <i class="icon-delete"></i>
             </span>
@@ -24,7 +27,7 @@
           </transition-group>
         </scroll>
         <div class="list-operate">
-          <div class="add">
+          <div class="add" @click.stop="showAddSong">
             <i class="icon-add"></i>
             <span class="text">添加歌曲到队列</span>
           </div>
@@ -36,6 +39,7 @@
       <confirm title="是否清空当前播放列表？"
                ref="confirm" @confirmPositive="confirmClear">
       </confirm>
+      <add-song ref="addSongHook"></add-song>
     </div>
   </transition>
 </template>
@@ -46,11 +50,12 @@
   import { mapActions } from 'vuex';
   import Confirm from 'base/confirm/confirm';
   import { playerMixin } from 'common/js/mixin';
+  import AddSong from 'components/add-song/add-song';
 
   export default {
     mixins: [playerMixin],
     components: {
-      Scroll, Confirm
+      Scroll, Confirm, AddSong
     },
     data () {
       return {
@@ -63,6 +68,9 @@
       }
     },
     methods: {
+      showAddSong () {
+        this.$refs.addSongHook.show();
+      },
       showConfirm () {
         this.$refs.confirm.show();
       },
@@ -104,24 +112,27 @@
       },
       show () {
         this.showFlag = true;
+        this.refresh();
+        this.scrollToCurrentSong();
+      },
+      refresh () {
         setTimeout(() => {
           this.$refs.listScroll.refresh();
-          this.scrollToCurrentSong();
         }, 20);
       },
       hide () {
         this.showFlag = false;
       },
       scrollToCurrentSong () {
-        let items = this.$refs.itemHook;
-        if (!items && !items.length) {
-          return;
-        }
-        let index = this.sequenceList.findIndex((item) => {
-          return item.id === this.currentSong.id;
-        });
         setTimeout(() => {
-          this.$refs.listScroll.scrollToElement(items[index], 300);
+          let items = this.$refs.itemHook;
+          if (!items && !items.length) {
+            return;
+          }
+          let ele = items.find(item => {
+            return parseInt(item.dataset.id) === parseInt(this.currentSong.id);
+          });
+          this.$refs.listScroll.scrollToElement(ele, 300);
         }, 320);
       },
       ...mapActions([
@@ -132,7 +143,7 @@
   };
 </script>
 
-<style lang="stylus" rel="stylesheet/stylus">
+<style lang="stylus" rel="stylesheet/stylus" scoped>
   @import "~common/stylus/variable"
   @import "~common/stylus/mixin"
 
@@ -191,7 +202,7 @@
           align-items: center
           padding: 0 30px 0 20px
           &.out-enter-active, &.out-leave-active
-            transition: all 0.5s
+            transition: all 0.3s
           &.out-enter, &.out-leave-to
             opacity: 0
             transform: translateX(100%)

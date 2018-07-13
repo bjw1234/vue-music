@@ -15,7 +15,7 @@ const express = require('express');
 const app = express();
 const axios = require('axios');
 const recommend = require('../dev-server/desclist.json');
-var apiRouter = express.Router();
+let apiRouter = express.Router();
 app.use('/api', apiRouter);
 
 const HOST = process.env.HOST;
@@ -74,7 +74,6 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           },
           params: req.query
         }).then(response => {
-          console.log(response.data);
           res.json(response.data);
         }).catch(err => {
           res.end(err);

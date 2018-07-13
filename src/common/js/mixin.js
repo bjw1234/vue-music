@@ -1,4 +1,4 @@
-import { mapGetters, mapMutations } from 'vuex';
+import { mapGetters, mapMutations, mapActions } from 'vuex';
 import { playMode } from './config';
 import { disorder } from 'common/js/util';
 
@@ -37,10 +37,31 @@ export const playerMixin = {
       'playing',
       'currentIndex',
       'mode',
-      'sequenceList'
+      'sequenceList',
+      'likeSongList'
     ])
   },
   methods: {
+    iconFavorite (song) {
+      if (this.isLikeSong(song)) {
+        return 'icon-favorite';
+      } else {
+        return 'icon-not-favorite';
+      }
+    },
+    toggleLike (song) {
+      if (this.isLikeSong(song)) {
+        this.deleteLikeSong(song);
+      } else {
+        this.saveLikeSong(song);
+      }
+    },
+    isLikeSong (song) {
+      let index = this.likeSongList.findIndex((item) => {
+        return song.id === item.id;
+      });
+      return index >= 0;
+    },
     changeMode () {
       let newMode = (this.mode + 1) % 3;
       this.setMode(newMode);
@@ -68,7 +89,56 @@ export const playerMixin = {
       setCurrentIndex: 'SET_CURRENTINDEX',
       setMode: 'SET_MODE',
       setSequenceList: 'SET_SEQUENCELIST',
-      setPlayList: 'SET_PLAYLIST'
-    })
+      setPlayList: 'SET_PLAYLIST',
+      setScreenState: 'SET_SCREEN_STATE'
+    }),
+    ...mapActions([
+      'saveLikeSong',
+      'deleteLikeSong'
+    ])
+  }
+};
+
+export const historyMixin = {
+  computed: {
+    ...mapGetters([
+      'searchHistory'
+    ])
+  },
+  data () {
+    return {
+      query: ''
+    };
+  },
+  methods: {
+    suggestScroll () {
+      // 让search-box失去焦点
+      this.$refs.searchBox.blur();
+    },
+    saveQuery () {
+      this.insertHistory(this.query);
+    },
+    onQueryChange (query) {
+      this.query = query;
+    },
+    historyItemDelete (item) {
+      this.deleteHistory(item);
+    },
+    historyItemSelect (item) {
+      console.log(item);
+      this.$refs.searchBox.setQuery(item);
+    },
+    onConfirmPositive () {
+      this.clearHistory();
+      this.$refs.confirm.hide();
+    },
+    showConfirm () {
+      this.$refs.confirm.show();
+    },
+    ...mapActions([
+      'insertHistory',
+      'deleteHistory',
+      'clearHistory'
+    ])
   }
 };

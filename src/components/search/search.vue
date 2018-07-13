@@ -45,32 +45,24 @@
   import Suggest from 'components/suggest/suggest';
   import { getHotKey } from 'api/search';
   import { ERR_OK } from 'api/config';
-  import { playListMixin } from 'common/js/mixin';
-  import { mapActions, mapGetters } from 'vuex';
+  import { playListMixin, historyMixin } from 'common/js/mixin';
   import SearchList from 'base/search-list/search-list';
   import Scroll from 'base/scroll/scroll';
   import Confirm from 'base/confirm/confirm';
 
   export default {
-    mixins: [playListMixin],
+    mixins: [playListMixin, historyMixin],
     components: {
       SearchBox, Suggest, SearchList, Scroll, Confirm
     },
-    computed: {
-      ...mapGetters([
-        'searchHistory'
-      ])
-    },
     data () {
       return {
-        hotKeyList: [],
-        query: ''
+        hotKeyList: []
       };
     },
     watch: {
       query (val) {
         if (!val) {
-          console.log('shortCut show...');
           setTimeout(() => {
             this.$refs.shortCut.refresh();
           }, 20);
@@ -91,41 +83,13 @@
       selectHotKey (item) {
         this.$refs.searchBox.setQuery(item.k);
       },
-      onQueryChange (query) {
-        this.query = query;
-      },
       handlePlayList (list) {
         let bottom = list.length ? '60px' : 0;
         this.$refs.searchResult.style.bottom = bottom;
         this.$refs.shortCut.$el.style.bottom = bottom;
         this.$refs.suggest.refresh();
         this.$refs.shortCut.refresh();
-      },
-      suggestScroll () {
-        // 让search-box失去焦点
-        this.$refs.searchBox.blur();
-      },
-      saveQuery () {
-        this.insertHistory(this.query);
-      },
-      historyItemDelete (item) {
-        this.deleteHistory(item);
-      },
-      historyItemSelect (item) {
-        this.$refs.searchBox.setQuery(item);
-      },
-      showConfirm () {
-        this.$refs.confirm.show();
-      },
-      onConfirmPositive () {
-        this.clearHistory();
-        this.$refs.confirm.hide();
-      },
-      ...mapActions([
-        'insertHistory',
-        'deleteHistory',
-        'clearHistory'
-      ])
+      }
     }
   };
 </script>
@@ -170,9 +134,9 @@
             .text
               flex: 1
               color: $color-text-l
-          .clear
-            extend-click()
-            color: $color-text-d
+            .clear
+              extend-click()
+              color: $color-text-d
     .search-result
       position: fixed
       width: 100%

@@ -1,5 +1,5 @@
 import { playMode } from 'common/js/config';
-import { getHistory } from 'common/js/cache';
+import { getSearchHistory, getPlayHistory, getLikeSongList } from 'common/js/cache';
 
 // 状态信息
 const state = {
@@ -15,7 +15,13 @@ const state = {
   // 排行榜列表item详情
   topListDetail: {},
   // 搜索历史数据
-  searchHistory: getHistory()
+  searchHistory: getSearchHistory(),
+  // 播放历史
+  playHistory: getPlayHistory(),
+  // 喜爱歌曲列表
+  likeSongList: getLikeSongList(),
+  // 是否全屏
+  screenState: false
 };
 
 export default state;

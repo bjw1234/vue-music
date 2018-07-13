@@ -43,6 +43,8 @@
             let singerList = res.singerList.data.singerlist;
             this.singerArr = this._normalizeSinger(singerList);
           }
+        }).catch(res => {
+          console.log(res);
         });
       },
       _normalizeSinger (list) {

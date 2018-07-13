@@ -31,8 +31,9 @@
           </div>
           <scroll ref="lyricScroll" class="middle-r" :data="currentLyrics && currentLyrics.lines">
             <div class="lyric-wrapper">
-              <div v-if="currentLyrics">
-                <p ref="lyricLine" class="txt" :class="{'current':currentLineNum === index}"
+              <div v-if="currentLyrics&&currentLyrics.lines">
+                <p ref="lyricLine" class="txt"
+                   :class="{'current':currentLineNum === index}"
                    v-for="(line,index) in currentLyrics.lines" :key="index">
                   {{ line.txt }}</p>
               </div>
@@ -65,7 +66,7 @@
               <i @click="nextSong" class="icon-next"></i>
             </div>
             <div class="icon i-right">
-              <i class="icon-not-favorite"></i>
+              <i @click="toggleLike(currentSong)" :class="iconFavorite(currentSong)"></i>
             </div>
           </div>
         </div>
@@ -103,7 +104,7 @@
 <script type="text/ecmascript-6">
   import Velocity from 'velocity-animate';
   import { playMode } from 'common/js/config';
-  import { mapGetters } from 'vuex';
+  import { mapGetters, mapActions } from 'vuex';
   import Scroll from 'base/scroll/scroll';
   import progressBar from 'base/progress-bar/progress-bar';
   import progressCircle from 'base/progress-circle/progress-circle';
@@ -160,8 +161,12 @@
         if (newSong.id === oldSong.id) {
           return;
         }
+        // 初始化
         if (this.currentLyrics) {
+          this.currentLineNum = 0;
           this.currentLyrics.stop();
+          this.currentLyrics = null;
+          this.currentPlayingLyric = '';
         }
         newSong.getSongUrl().then(url => {
           this.currentSongUrl = url;
@@ -317,6 +322,7 @@
       },
       songCanPlay () {
         this.currentSongReady = true;
+        this.savePlayHistory(this.currentSong);
       },
       songError () {
         console.log('audio歌曲发生错误...');
@@ -372,6 +378,9 @@
       },
       getSongLyric () {
         this.currentSong.getLyrics().then(lyrics => {
+          if (this.currentSong.lyrics !== lyrics) {
+            return;
+          }
           // 初始化歌词对象和回调
           if (this.currentLyrics) {
             this.currentLyrics.stop();
@@ -458,7 +467,10 @@
       },
       showPlayList () {
         this.$refs.playList.show();
-      }
+      },
+      ...mapActions([
+        'savePlayHistory'
+      ])
     }
   };
 </script>
@@ -626,6 +638,8 @@
           .icon
             flex: 1
             color: $color-theme
+            .icon-favorite
+              color: #d93f30
             &.disable
               color: $color-theme-d
             i

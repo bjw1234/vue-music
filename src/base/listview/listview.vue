@@ -77,7 +77,7 @@
       display: flex
       justify-content: center
       align-items: center
-      position: fixed
+      position: absolute
       top: 0
       bottom: 0
       width: 100%

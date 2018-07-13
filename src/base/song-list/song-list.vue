@@ -15,6 +15,8 @@
 </template>
 
 <script type="text/ecmascript-6">
+  import { requestFullScreen } from 'common/js/util';
+
   export default {
     props: {
       songs: {
@@ -32,6 +34,9 @@
       },
       selectSong (song, index) {
         this.$emit('select_song', song, index);
+        // 全屏补丁
+        requestFullScreen();
+        this.$store.commit('SET_SCREEN_STATE', true);
       },
       getRankClaz (index) {
         if (index <= 2) {

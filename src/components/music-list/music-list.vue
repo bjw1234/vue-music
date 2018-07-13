@@ -34,6 +34,8 @@
   import { prefixStyle } from 'common/js/dom';
   import { mapActions } from 'vuex';
   import { playListMixin } from 'common/js/mixin';
+  import { requestFullScreen } from 'common/js/util';
+
   // CSS属性
   const transform = prefixStyle('transform');
   const backdrop = prefixStyle('backdrop-filter');
@@ -125,6 +127,9 @@
         });
       },
       clickRandomPlayAll () {
+        // 全屏补丁
+        requestFullScreen();
+        this.$store.commit('SET_SCREEN_STATE', true);
         this.randomPlayAll({
           list: this.songs
         });

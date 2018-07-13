@@ -32,6 +32,7 @@
   import { mapMutations, mapActions } from 'vuex';
   import Singer from 'common/js/singer';
   import NoResult from 'components/no-result/no-result';
+  import { requestFullScreen } from 'common/js/util';
 
   const TYPE_SINGER = 'type_singer';
   const PER_PAGE = 20;
@@ -41,13 +42,16 @@
       Scroll, Loading, NoResult
     },
     props: {
+      showSinger: {
+        type: Number,
+        default: 1
+      },
       queryString: {
         type: String,
         default: ''
       }
     },
     created () {
-      this.showSinger = 1;
       this.pullup = true;
       this.beforeScroll = true;
     },
@@ -84,6 +88,9 @@
         } else {
           // 歌曲
           this.insertSong(item);
+          // 全屏补丁
+          requestFullScreen();
+          this.$store.commit('SET_SCREEN_STATE', true);
         }
         // 派发事件
         this.$emit('suggestItemClick');

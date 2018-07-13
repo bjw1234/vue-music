@@ -1,31 +1,39 @@
 <template>
   <div class="m-header">
     <div class="full-screen" @click="fullScreenClick"
-         v-text="fullScreen?'退出全屏':'全屏显示'">
+         v-text="screenState?'退出全屏':'全屏显示'">
     </div>
     <div class="icon"></div>
     <div class="text">小鸡 音乐</div>
+    <router-link tag="div" to="/user" class="mine">
+      <i class="icon-mine"></i>
+    </router-link>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+  import { mapGetters, mapMutations } from 'vuex';
   import { requestFullScreen, exitFullScreen } from 'common/js/util';
 
   export default {
-    data () {
-      return {
-        fullScreen: false
-      };
+    computed: {
+      ...mapGetters([
+        'screenState'
+      ])
     },
     methods: {
       fullScreenClick () {
-        this.fullScreen = !this.fullScreen;
-        if (this.fullScreen) {
-          requestFullScreen();
-        } else {
+        if (this.screenState) {
           exitFullScreen();
+          this.setScreenState(false);
+        } else {
+          requestFullScreen();
+          this.setScreenState(true);
         }
-      }
+      },
+      ...mapMutations({
+        setScreenState: 'SET_SCREEN_STATE'
+      })
     }
   };
 </script>
@@ -60,4 +68,13 @@
       display: inline-block
       line-height: 44px
       font-size: $font-size-large
+    .mine
+      position: absolute
+      top: 0
+      right: 0
+      .icon-mine
+        display: block
+        padding: 12px
+        font-size: 20px
+        color: $color-theme
 </style>

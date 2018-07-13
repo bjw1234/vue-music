@@ -10,6 +10,9 @@ export class Song {
     this.album = album;
     this.duration = duration;
     this.image = image;
+    if (url) {
+      this.url = url;
+    }
   }
 
   // 获取歌曲url的方法

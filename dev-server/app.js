@@ -3,7 +3,7 @@ const app = express();
 const fs = require('fs');
 let result = null;
 
-fs.readFile('./desclist.json', 'utf8', (err, data) => {
+fs.readFile('/desclist.json', 'utf8', (err, data) => {
   if (err) {
     console.log(err);
   } else {
