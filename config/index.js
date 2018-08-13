@@ -11,14 +11,14 @@ module.exports = {
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {
-      '/getDescList': {
-        target: 'http://127.0.0.1:7070/desclist',
-        changeOrigin: true,
-        // secure: false,
-        pathRewrite: {
-          '^/getDescList': '/'
-        }
-      }
+      // '/getDescList': {
+      //   target: 'http://127.0.0.1:7070/desclist',
+      //   changeOrigin: true,
+      //   // secure: false,
+      //   pathRewrite: {
+      //     '^/getDescList': '/'
+      //   }
+      // }
     },
 
     // Various Dev Server settings

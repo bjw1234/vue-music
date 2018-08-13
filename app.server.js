@@ -3,6 +3,9 @@ const axios = require('axios');
 const path = require('path');
 const app = express();
 
+const port = 8713;
+const ip = '0.0.0.0';
+
 let apiRouter = express.Router();
 app.use('/api', apiRouter);
 
@@ -58,9 +61,9 @@ app.get('/api/desc_song', (req, res) => {
 // 静态文件托管
 app.use(express.static(path.join(__dirname, '/dist')));
 
-app.listen(8713, (err) => {
+app.listen(port, ip, (err) => {
   if (err) {
     console.log(err);
   }
-  console.log('app is running at port:8713');
+  console.log('app is running at port:' + port);
 });

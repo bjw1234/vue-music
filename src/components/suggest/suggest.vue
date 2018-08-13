@@ -144,10 +144,10 @@
       },
       normalizeSuggestList (data) {
         let ret = [];
-        // 歌手
-        if (data.zhida && data.zhida.singermid) {
-          ret.push({...data.zhida, ...{type: TYPE_SINGER}});
-        }
+        // 歌手 zhida 这个字段不存在了
+        // if (data.zhida && data.zhida.singermid) {
+        //  ret.push({...data.zhida, ...{type: TYPE_SINGER}});
+        // }
         // 歌曲
         if (data.song && data.song.list) {
           let musicData = data.song.list;
