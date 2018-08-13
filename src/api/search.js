@@ -1,5 +1,6 @@
 import jsonp from 'common/js/jsonp';
 import { commonParams, options } from './config';
+import axios from 'axios';
 
 /**
  * 获取搜索热词
@@ -18,7 +19,7 @@ export function getHotKey () {
 /**
  * 根据用户输入的keyword查询
  */
-export function getSuggestList (keyword, page, zhida, perpage) {
+export function _getSuggestList (keyword, page, zhida, perpage) {
   const url = 'https://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp';
   const data = Object.assign({}, commonParams, {
     uin: 0,
@@ -39,4 +40,34 @@ export function getSuggestList (keyword, page, zhida, perpage) {
     _: 1531117370025
   });
   return jsonp(url, data, options);
+}
+
+// api/key_search
+/**
+ * 根据用户输入的keyword查询
+ */
+export function getSuggestList (keyword, page, zhida, perpage) {
+  const data = Object.assign({}, commonParams, {
+    uin: 0,
+    platform: 'h5',
+    needNewCode: 1,
+    w: keyword,
+    zhidaqu: 1,
+    catZhida: zhida,
+    t: 0,
+    flag: 1,
+    ie: 'utf-8',
+    sem: 1,
+    aggr: 0,
+    perpage: perpage,
+    n: perpage,
+    p: page,
+    format: 'json',
+    remoteplace: 'txt.mqq.all',
+    _: 1531117370025
+  });
+
+  return axios.get('/api/key_search', {
+    params: data
+  });
 }

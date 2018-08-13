@@ -99,6 +99,7 @@
         // 加载更多数据
         if (this.isHasMore) {
           getSuggestList(this.queryString, this.currentPage, 0, PER_PAGE).then(res => {
+            res = res.data;
             if (res.code === ERR_OK) {
               this.suggestList = this.suggestList.concat(this.normalizeSuggestList(res.data));
               this._checkHasMore(res.data);
@@ -125,6 +126,7 @@
       search (query) {
         this.currentPage = 1;
         getSuggestList(query, this.currentPage, this.showSinger, PER_PAGE).then(res => {
+          res = res.data;
           if (res.code === ERR_OK) {
             this.suggestList = this.normalizeSuggestList(res.data);
             this._checkHasMore(res.data);
@@ -145,9 +147,9 @@
       normalizeSuggestList (data) {
         let ret = [];
         // 歌手 zhida 这个字段不存在了
-        // if (data.zhida && data.zhida.singermid) {
-        //  ret.push({...data.zhida, ...{type: TYPE_SINGER}});
-        // }
+        if (data.zhida && data.zhida.singermid) {
+         ret.push({...data.zhida, ...{type: TYPE_SINGER}});
+        }
         // 歌曲
         if (data.song && data.song.list) {
           let musicData = data.song.list;

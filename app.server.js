@@ -57,6 +57,21 @@ app.get('/api/desc_song', (req, res) => {
     res.end(err);
   });
 });
+// 获取关键词搜索信息
+app.get('/api/key_search',(req,res) => {
+  let url = 'https://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp';
+  axios.get(url, {
+    headers: {
+      origin: 'https://y.qq.com',
+  referer: 'https://y.qq.com/m/index.html'
+    },
+    params: req.query
+  }).then(response => {
+    res.json(response.data);
+  }).catch(err => {
+    res.end(err);
+  });
+});
 
 // 静态文件托管
 app.use(express.static(path.join(__dirname, '/dist')));
