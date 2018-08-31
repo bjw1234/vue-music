@@ -2,6 +2,8 @@
 
 > 基于vue的音乐播放器开发。
 
+演示地址：http://music.baijiawei.top
+
 ## Build Setup
 
 ``` bash
